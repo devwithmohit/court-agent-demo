@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRB Law - Court Filing & Movement Agent Demo</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #131c2e;
+            --accent-color: #f59e0b; /* Amber/Gold for legal elite feel */
+            --blue-color: #3b82f6;
+            --success-color: #10b981;
+            --text-main: #f1f5f9;
+            --text-muted: #64748b;
+            --border-color: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            max-width: 800px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            color: var(--text-main);
+            margin-bottom: 12px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 30px;
+            width: 100%;
+            max-width: 1300px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--blue-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .card-title.agent {
+            color: var(--accent-color);
+        }
+
+        .doc-viewer {
+            background-color: #070a12;
+            border: 1px dashed #334155;
+            border-radius: 8px;
+            padding: 20px;
+            color: #cbd5e1;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.88rem;
+            white-space: pre-wrap;
+            height: 480px;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+
+        .btn-container {
+            grid-column: span 2;
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .process-btn {
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 16px 36px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+        }
+
+        .process-btn:hover {
+            background-color: #d97706;
+            transform: translateY(-2px);
+        }
+
+        .process-btn:disabled {
+            background-color: var(--border-color);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Agent Dashboard Layout */
+        .dashboard-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 480px;
+            color: var(--text-muted);
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .dashboard-content {
+            display: none;
+            height: 480px;
+            overflow-y: auto;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .meta-item {
+            background-color: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid var(--blue-color);
+        }
+
+        .meta-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .meta-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .section-heading {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin: 20px 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Tracking Table style */
+        .tracking-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .tracking-table th, .tracking-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tracking-table th {
+            background-color: rgba(255, 255, 255, 0.02);
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-movement { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+        .badge-cost { background-color: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border-left-color: var(--accent-color);
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Court Filing & Case Movement Tracking Agent</h1>
+        <p>100% Secure Local Parsing — Automating Log Sheet Analysis & Cost Extraction</p>
+    </div>
+
+    <div class="container">
+        <!-- Left Side: Input Court Document -->
+        <div class="card">
+            <div class="card-title">
+                <span>📄</span> Scanned Court Log Sheet / eLitigation Export PDF
+            </div>
+            <div class="doc-viewer">
+========================================================================
+SINGAPORE COURTS - CASE LOG EXTRACT
+========================================================================
+CASE REF: MC-20492-2026
+PARTIES: Tan Ah Kow vs. IRB Logistics Pte Ltd
+RECORDING DATE: 02 JUNE 2026
+------------------------------------------------------------------------
+
+[09:15 AM] REGISTRY ACTION:
+Document Received: Defendant's Submissions on Costs (Amendment No. 2). Filed by IRB Law LLP on behalf of Defendant.
+SYSTEM NOTE: Processing fee of SGD 150.00 debited from law firm account.
+
+[11:30 AM] BEFORE THE HONGORABLE JUDGE IN CHAMBERS 4B:
+Matter called for Pre-Trial Conference (PTC). Mr. Mohit Rawat appearing for Defendant. Ms. Sarah Lim appearing for Plaintiff.
+- Plaintiff requests extension of 14 days to file Supplementary Affidavits.
+- COURT ORDER: Granted. Plaintiff to file by 16 June 2026.
+- NEXT HEARING SET: Further PTC scheduled on 23 June 2026 at 10:00 AM before Registrar.
+
+[02:45 PM] TAXATION/FEE SYSTEM UPDATE:
+Interim Hearing Cost assessed by Court. Penalty cost of SGD 450.00 awarded against Plaintiff for late filing. Law firm processing stamp applied. Fee code: CRT-TAX-04.
+
+========================================================================
+*** END OF LOG SHEET EXTRACTION ***
+========================================================================</div>
+        </div>
+
+        <!-- Right Side: AI Agent Output Dashboard -->
+        <div class="card">
+            <div class="card-title agent">
+                <span>🤖</span> AI Agent Analytics Dashboard
+            </div>
+
+            <!-- Default Placeholder -->
+            <div class="output-placeholder" id="placeholderState">
+                <div class="spinner" id="loadingSpinner"></div>
+                <p id="placeholderText">Provide the Court Log document and click "Parse Court Sheet" to extract insights instantly.</p>
+            </div>
+
+            <!-- Dashboard Content (Hidden by default) -->
+            <div class="dashboard-content" id="dashboardContent">
+                <div class="meta-grid">
+                    <div class="meta-item">
+                        <div class="meta-label">Case Reference</div>
+                        <div class="meta-value">MC-20492-2026</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Parties Involved</div>
+                        <div class="meta-value">Tan Ah Kow vs. IRB Logistics</div>
+                    </div>
+                </div>
+
+                <div class="section-heading">Detected Case Movements (Updates)</div>
+                <table class="tracking-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Event / Update Description</th>
+                            <th>Critical Dates</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge badge-movement">Filing</span></td>
+                            <td>Defendant's Submissions on Costs (Amendment No. 2) successfully filed.</td>
+                            <td>02 June 2026</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-movement">Order</span></td>
+                            <td>Plaintiff granted 14 days extension to file Supplementary Affidavits.</td>
+                            <td>Deadline: 16 June 2026</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-movement">Next Date</span></td>
+                            <td>Further Pre-Trial Conference (PTC) scheduled before the Registrar.</td>
+                            <td><strong>23 June 2026 (10:00 AM)</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="section-heading">Financial Tracking (Costs & Fees)</div>
+                <table class="tracking-table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Financial Description</th>
+                            <th>Amount (SGD)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge badge-cost">Debit</span></td>
+                            <td>Filing processing fee debited from Firm's account.</td>
+                            <td>$150.00 SGD</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-cost">Awarded</span></td>
+                            <td>Penalty cost awarded <strong>against Plaintiff</strong> (Late Filing).</td>
+                            <td>$450.00 SGD</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Center Action Button -->
+        <div class="btn-container">
+            <button class="process-btn" id="parseBtn" onclick="runCourtAgent()">Parse Court Sheet & Extract Analytics</button>
+        </div>
+    </div>
+
+    <script>
+        function runCourtAgent() {
+            const btn = document.getElementById('parseBtn');
+            const spinner = document.getElementById('loadingSpinner');
+            const placeholderText = document.getElementById('placeholderText');
+            const placeholderState = document.getElementById('placeholderState');
+            const dashboardContent = document.getElementById('dashboardContent');
+
+            btn.disabled = true;
+            btn.innerText = "Analyzing Logs locally (Zero-Data Retention)...";
+            btn.style.backgroundColor = "#475569";
+            spinner.style.display = "block";
+            placeholderText.innerText = "Running local OCR and LLM layer... Extracting movements, critical milestones, and transaction ledger details safely...";
+
+            // 2 seconds animation to look like real heavy processing
+            setTimeout(() => {
+                placeholderState.style.display = "none";
+                dashboardContent.style.display = "block";
+                btn.innerText = "Log Analysis Completed";
+                btn.style.backgroundColor = "var(--success-color)";
+                btn.style.color = "#fff";
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
